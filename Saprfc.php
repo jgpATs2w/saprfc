@@ -1,5 +1,5 @@
 <?php
-namespace sap;
+namespace saprfc;
 /*
 * Class specialized in communicate through Remote Function Calls,
 * with SAP server.
@@ -7,89 +7,55 @@ namespace sap;
 *
 */
 class SAPRFC{
-  static $rfc = null;
-  static $fce = null;
+  static $connection = null;//connection handler
+	static $function = null;//function handler
 
-  private static $login = null;
-	static $function = null;
+  /*
+  * Initialization function
+  *  @param array $settings this array MUST content all of these elements: array (
+          "ASHOST"=> SAP_HOST,       // application server host name
+          "SYSNR"=> SAP_SYSNR,      // system number
+          "CLIENT"=> SAP_CLIENT,    // client
+          "USER"=> SAP_USER,        // user
+          "PASSWD"=> SAP_PASSWD
+         );
+  *
+  */
 
-	static function load(){
-		self::$login = array (// Set login data to R/3
-            "ASHOST"=> SAP_HOST,       // application server host name
-            "SYSNR"=> SAP_SYSNR,      // system number
-            "CLIENT"=> SAP_CLIENT,    // client
-            "USER"=> SAP_USER,        // user
-            "PASSWD"=> SAP_PASSWD
-           );
-
-		self::$function = SAP_FUNCTION;
+	static function init( $settings ){
+    self::$connection= \saprfc_open ( $settings );
 	}
+  /*
+  * Make a call to an function module, the function must exist.
+  */
+	static function call($functionName){
 
-  static function checkModule(){
-  	return function_exists( "saprfc_open" );
-  }
+    self::$function= \saprfc_function_discover (self::$connection, $functionName );
 
-	static function start(){
-		if( ! self::login() )
-			return _theend( 0, "no se puede conectar con el servidor SAP", null );
+    //\saprfc_table_init(SAPRFC::$function, "INTER");
 
-		if( ! self::discover() )
-			return _theend( 0, "no existe la funcion " . SAP_FUNCTION, null );
+	   $returnCode = \saprfc_call_and_receive ( self::$function );
+
+     switch($returnCode){
+       case SAPRFC_OK:
+        return true;
+       case SAPRFC_EXCEPTION:
+        throw new \Exception("Saprfc.call# Exception raised: '" . \saprfc_exception( self::$function)."'");
+       default:
+        throw new \Exception("Saprfc.call# Error: '" . \saprfc_error( self::$function) . "'");
+     }
 	}
-
-	static function login(){
-
-	   self::$rfc = saprfc_open ( self::$login );
-
-	   if ( ! self::$rfc ){
-	       self::logError( "login:" . saprfc_error() );
-	       return false;
-	   }
-
-	   return true;
-	}
-
-	static function discover(){
-		self::$fce = saprfc_function_discover( self::$rfc, self::$function );
-	   if (! self::$fce ){
-	      self::logError( "discover: no function " . self::$function );
-		  return false;
-	   }
-
-	   return true;
-	}
-
-	static function call(){
-
-	   $rc = saprfc_call_and_receive ( self::$fce );
-
-	   if ( $rc != SAPRFC_OK ){
-	       if ( self::$rfc == SAPRFC_EXCEPTION )
-	           self::logError( "Exception raised: " . saprfc_exception( self::$fce) );
-	       else
-	           self::logError( "Call error: " . saprfc_error( self::$fce) );
-
-		   return false;
-	   }
-
-	   return true;
-	}
-
+  /*
+  * Export a single parameter
+  */
 	static function export( $param ){
-		return saprfc_export( self::$fce, $param );
+		return \saprfc_export( self::$function, $param );
 	}
-
-	static function importAll( $params ){
-
-		foreach( $params as $param => $value )
-			if( ! is_null( $value ) )
-				self::import( $param, $value );
-
-		return true;
-
-	}
-
-	static function exportAll( $params ){
+  /*
+  * Export an array of parameters
+  * @return array Key-value pairs
+  */
+  static function exportAll( $params ){
 
 		$RETURN = array();
 
@@ -108,15 +74,46 @@ class SAPRFC{
 		return $RETURN;
 	}
 
-	static function import( $param, $value ){
-		return saprfc_import( self::$fce, $param, $value );
+  /*
+  * Import an argument to the defined interface.
+  */
+  static function import( $param, $value ){
+    return \saprfc_import( self::$function, $param, $value );
+  }
+
+  /*
+  * Import an array of key-value parameters
+  */
+	static function importAll( $params ){
+
+		foreach( $params as $param => $value )
+			if( ! is_null( $value ) )
+				self::import( $param, $value );
+
+		return true;
+
 	}
 
+  /*
+  * Close the connection
+  */
 	static function close(){
 
-	   saprfc_function_free( self::$fce );
+	   \saprfc_function_free( self::$function );
 
-	   saprfc_close( self::$rfc );
+	   \saprfc_close( self::$connection );
 	}
+  /*
+  * Check if the saprfc module is supported
+  */
+  static function checkModule(){
+  	return function_exists( "saprfc_open" );
+  }
+  /*
+  * Get last error of the function
+  */
+  static function getError(){
+    return \saprfc_error();
+  }
 
 }

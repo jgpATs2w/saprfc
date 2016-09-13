@@ -1,0 +1,16 @@
+
+**** ERROR file opened at 20160912 175757 Hora de verano romance, SAP-REL 720,0,618 RFC-VER 3 1508269 MT-SL
+T:852 Error in program 'php': <* RfcReceive [1] : returns 19:RFC_INVALID_PARAMETER
+T:852 Error in program 'php': <* RfcCallReceive [1] : returns 19:RFC_INVALID_PARAMETER
+
+**** ERROR file opened at 20160912 175918 Hora de verano romance, SAP-REL 720,0,618 RFC-VER 3 1508269 MT-SL
+T:6652 Error in program 'php': <* RfcReceive [1] : returns 19:RFC_INVALID_PARAMETER
+T:6652 Error in program 'php': <* RfcCallReceive [1] : returns 19:RFC_INVALID_PARAMETER
+
+**** ERROR file opened at 20160912 180140 Hora de verano romance, SAP-REL 720,0,618 RFC-VER 3 1508269 MT-SL
+T:5904 Error in program 'php': <* RfcReceive [1] : returns 19:RFC_INVALID_PARAMETER
+T:5904 Error in program 'php': <* RfcCallReceive [1] : returns 19:RFC_INVALID_PARAMETER
+
+**** ERROR file opened at 20160912 180214 Hora de verano romance, SAP-REL 720,0,618 RFC-VER 3 1508269 MT-SL
+T:7052 Error in program 'php': <* RfcReceive [1] : returns 19:RFC_INVALID_PARAMETER
+T:7052 Error in program 'php': <* RfcCallReceive [1] : returns 19:RFC_INVALID_PARAMETER
